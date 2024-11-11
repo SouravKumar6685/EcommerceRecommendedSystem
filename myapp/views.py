@@ -8,18 +8,17 @@ from .models import *
 def product_list(request): 
     products = Product.objects.all()
 
-    if query:= request.GET.get('q'):
-          
-        search_query = SearchQuery(query)
-
+    if search:= request.GET.get('q'):
+        query = SearchQuery(search)  
+        vector = SearchVector('title', 'description', 'category', 'tags__name', config='english')
+        rank = SearchRank(vector, query)
         products = products.annotate(
-            query = SearchVector('title', 'description', 'category', 'tags__name', config='english')
-        ).filter(query=query)
+            rank = rank
+        ).filter(rank__gte=0.05).order_by('-rank')
 
 
     context = {
         'products': products,
-        'query': query,
     }
 
     return render(request, 'product_list.html', context)
