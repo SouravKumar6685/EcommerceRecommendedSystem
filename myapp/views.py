@@ -5,17 +5,16 @@ from django.contrib.postgres.search import SearchQuery, SearchVector, SearchRank
 from django.db.models import Q
 from .models import *
 
-def product_list(request):
-    query = request.GET.get('q', '')
+def product_list(request): 
     products = Product.objects.all()
 
-    if query:
-        search_vector = SearchVector('title', 'description', 'category', 'tags__name', config='english')  
+    if query:= request.GET.get('q'):
+          
         search_query = SearchQuery(query)
 
         products = products.annotate(
-            rank=SearchRank(search_vector, search_query)
-        ).filter(rank__gte=0.1).order_by('-rank')
+            query = SearchVector('title', 'description', 'category', 'tags__name', config='english')
+        ).filter(query=query)
 
 
     context = {
